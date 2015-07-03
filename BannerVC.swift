@@ -1,6 +1,6 @@
 //
 //  BannerVC.swift
-//  Whoniverse
+//  Ysoftware
 //
 //  Created by Ярослав Ерохин on 29.06.15.
 //  Copyright © 2015 Yaroslav Erohin. All rights reserved.

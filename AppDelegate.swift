@@ -1,8 +1,8 @@
 //
 //  AppDelegate.swift
-//  Whoniverse
+//  Ysoftware
 //
-//  Created by Ярослав Ерохин on 22.06.15.
+//  Created by Yaroslav Erohin on 22.06.15.
 //  Copyright © 2015 Yaroslav Erohin. All rights reserved.
 //
 
