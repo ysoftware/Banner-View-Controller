@@ -7,23 +7,16 @@
 //
 
 import UIKit
-import CoreData
-
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-    var ArticleIdFromNotification:String?
     var window: UIWindow?
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
-        //ads
+
         setUpiAd()
 
         return true
-    }
-
-    func applicationWillTerminate(application: UIApplication) {
-        NSUserDefaults.standardUserDefaults().synchronize()
     }
     
     func setUpiAd() {
