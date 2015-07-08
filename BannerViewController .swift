@@ -11,11 +11,11 @@ import iAd
 
 class BannerViewController: UIViewController, ADBannerViewDelegate {
 
-    let BannerViewActionWillBegin = "BannerViewActionWillBegin",
-    BannerViewActionDidFinish = "BannerViewActionDidFinish"
-
+    let BannerViewActionWillBegin = "BannerViewActionWillBegin", BannerViewActionDidFinish = "BannerViewActionDidFinish"
     var _contentViewController:UIViewController!
-    let _bannerView = ADBannerView(adType: .Banner)
+
+    private let _bannerView = ADBannerView(adType: .Banner)
+    private var enabled = true
 
     convenience init(contentController:UIViewController!) {
         self.init()
@@ -45,23 +45,40 @@ class BannerViewController: UIViewController, ADBannerViewDelegate {
         var contentFrame = view.bounds
         var bannerFrame = CGRectZero
 
-        _bannerView.autoresizingMask = .FlexibleWidth
-        bannerFrame.size = _bannerView.sizeThatFits(contentFrame.size)
+        if enabled {
+            _bannerView.autoresizingMask = .FlexibleWidth
+            bannerFrame.size = _bannerView.sizeThatFits(contentFrame.size)
 
-        if _bannerView.bannerLoaded {
-            contentFrame.size.height -= bannerFrame.size.height
-            bannerFrame.origin.y = contentFrame.size.height
-        }
-        else {
-            bannerFrame.origin.y = contentFrame.size.height
+            if _bannerView.bannerLoaded {
+                contentFrame.size.height -= bannerFrame.size.height
+                bannerFrame.origin.y = contentFrame.size.height
+            }
+            else {
+                bannerFrame.origin.y = contentFrame.size.height
+            }
         }
 
         _contentViewController.view.frame = contentFrame
         _bannerView.frame = bannerFrame
     }
 
+    func enabled(value:Bool) {
+        enabled = value
+        if enabled {
+            if _bannerView.superview == nil {
+                view.addSubview(_bannerView)
+            }
+        }
+        else {
+            _bannerView.removeFromSuperview()
+        }
+        UIView.animateWithDuration(0.25) { () -> Void in
+            self.view.setNeedsLayout()
+            self.view.layoutIfNeeded()
+        }
+    }
+
     func bannerViewDidLoadAd(banner: ADBannerView!) {
-//        print("banner loaded")
         UIView.animateWithDuration(0.25) { () -> Void in
             self.view.setNeedsLayout()
             self.view.layoutIfNeeded()
@@ -69,7 +86,6 @@ class BannerViewController: UIViewController, ADBannerViewDelegate {
     }
 
     func bannerView(banner: ADBannerView!, didFailToReceiveAdWithError error: NSError!) {
-//        print("banner didn't load")
         UIView.animateWithDuration(0.25) { () -> Void in
             self.view.setNeedsLayout()
             self.view.layoutIfNeeded()
@@ -84,6 +100,5 @@ class BannerViewController: UIViewController, ADBannerViewDelegate {
     func bannerViewActionDidFinish(banner: ADBannerView!) {
         NSNotificationCenter.defaultCenter().postNotificationName(BannerViewActionDidFinish, object: self)
     }
-    
 }
 
