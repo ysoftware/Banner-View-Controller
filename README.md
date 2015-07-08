@@ -26,7 +26,7 @@ How to use:
         
 Controlling the banner:
 
-bannerViewController.enabled(false) //Removes ad banner from the view hierarchy 
+        bannerViewController.enabled(false) //Removes ad banner from the view hierarchy 
 
 
 Watch "Optimize Your Earning Power With iAd" from WWDC 2014 to for more details.
