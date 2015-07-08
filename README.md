@@ -1,4 +1,4 @@
-# Banner-View-Controller
+# Banner View Controller
 
 A port of Apple's BannerViewController to Swift. Requires target of iOS 8.1 or higher.
 
