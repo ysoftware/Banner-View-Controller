@@ -8,7 +8,7 @@ Add BannerViewController.swift to your project. Don't forget to set the target.
 
 ####How to use
 
-BannerViewController wraps around your rootViewController, shows iAd banner and resizes rootViewController with animation.
+BannerViewController wraps around your rootViewController, shows iAd banner and resizes rootViewController with animation. Check AppDelegate.swift for live usage example.
 
 ```swift
 let bannerVC = BannerViewController(contentController: window.rootViewController)
