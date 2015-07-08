@@ -27,7 +27,7 @@ bannerVC.enabled(false) //Removes ad banner from the view hierarchy
 Also when banner state changes these notifications are posted:
 BannerViewActionWillBegin // User clicked on banner
 BannerViewActionDidFinish //User dismissed the full screen experience
-BannerViewDidFailToReceiveAdWithError //Ad Banner didn't load. Get description of error from userinfo["error"]
+BannerViewDidFailToReceiveAdWithError //Banner didn't load. Get description from userinfo["error"] (String)
 BannerViewDidLoadAd //Ad banner successfully loaded
 ```
 
