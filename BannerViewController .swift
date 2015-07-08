@@ -11,7 +11,9 @@ import iAd
 
 class BannerViewController: UIViewController, ADBannerViewDelegate {
 
-    let BannerViewActionWillBegin = "BannerViewActionWillBegin", BannerViewActionDidFinish = "BannerViewActionDidFinish"
+    let BannerViewActionWillBegin = "BannerViewActionWillBegin", BannerViewActionDidFinish = "BannerViewActionDidFinish",
+    BannerViewDidFailToReceiveAdWithError = "BannerViewDidFailToReceiveAdWithError", BannerViewDidLoadAd = "BannerViewDidLoadAd"
+
     var _contentViewController:UIViewController!
 
     private let _bannerView = ADBannerView(adType: .Banner)
@@ -79,6 +81,7 @@ class BannerViewController: UIViewController, ADBannerViewDelegate {
     }
 
     func bannerViewDidLoadAd(banner: ADBannerView!) {
+        NSNotificationCenter.defaultCenter().postNotificationName(BannerViewDidLoadAd, object: self)
         UIView.animateWithDuration(0.25) { () -> Void in
             self.view.setNeedsLayout()
             self.view.layoutIfNeeded()
@@ -86,6 +89,7 @@ class BannerViewController: UIViewController, ADBannerViewDelegate {
     }
 
     func bannerView(banner: ADBannerView!, didFailToReceiveAdWithError error: NSError!) {
+        NSNotificationCenter.defaultCenter().postNotificationName(BannerViewDidFailToReceiveAdWithError, object: self, userInfo: ["error":error.localizedDescription])
         UIView.animateWithDuration(0.25) { () -> Void in
             self.view.setNeedsLayout()
             self.view.layoutIfNeeded()
