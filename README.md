@@ -12,7 +12,7 @@ BannerViewController wraps around your rootViewController, shows iAd banner and 
 
 ```swift
 let bannerVC = BannerViewController(contentController: window.rootViewController)
- window.rootViewController = bannerVC
+window.rootViewController = bannerVC
 ```
 
 ####Controlling the banner:
