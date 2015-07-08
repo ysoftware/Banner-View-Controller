@@ -20,19 +20,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func setUpiAd() {
-        let shouldShowAds = NSUserDefaults.standardUserDefaults().objectForKey(Constants.UserDefaults.AdsDisabled) == nil
+        let shouldShowAds = true // put your code here
         if let window = self.window {
             if let rootVC = window.rootViewController {
 
                 if shouldShowAds {
-                    if !rootVC.isKindOfClass(BannerViewController) {
-                        let bannerVC = BannerViewController(contentController: rootVC)
-                        window.rootViewController = bannerVC
+                    if let bannerVC = rootVC as? BannerViewController {
+                        bannerVC.enabled(false)
                     }
                 }
                 else{
-                    if let bannerVC = rootVC as? BannerViewController {
-                        window.rootViewController = bannerVC._contentViewController
+                    if !rootVC.isKindOfClass(BannerViewController) {
+                        let bannerVC = BannerViewController(contentController: rootVC)
+                        window.rootViewController = bannerVC
                     }
                 }
             }
