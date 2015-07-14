@@ -44,6 +44,8 @@ class BannerViewController: UIViewController, ADBannerViewDelegate {
     }
 
     override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+
         var contentFrame = view.bounds
         var bannerFrame = CGRectZero
 
