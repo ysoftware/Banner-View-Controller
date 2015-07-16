@@ -1,6 +1,7 @@
 # Banner View Controller
 
 A port of Apple's BannerViewController to Swift. Requires target of iOS 8.1 or higher.
+Thre is also a version that works with iAd+AdMob on iOS 7.0 or higher.
 Works great with both iPad and iPhone. Won't appear on view controllers presented modally over rootViewController.
 
 ####Installation
