@@ -20,21 +20,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func setUpiAd() {
-        let shouldShowAds = true // put your code here
-        if let window = self.window {
-            if let rootVC = window.rootViewController {
+        //Replace rootViewController with BannerViewController (with rootViewController inside)
+        if !(window?.rootViewController is BannerViewController) {
+            let bannerVC = BannerViewController(contentController: window?.rootViewController)
+            window?.rootViewController = bannerVC
+        }
 
-                if shouldShowAds {
-                    if let bannerVC = rootVC as? BannerViewController {
-                        bannerVC.enabled(false)
-                    }
-                }
-                else{
-                    if !rootVC.isKindOfClass(BannerViewController) {
-                        let bannerVC = BannerViewController(contentController: rootVC)
-                        window.rootViewController = bannerVC
-                    }
-                }
+        //Set banner rotation on or off
+        if let bannerVC = window?.rootViewController as? BannerViewController {
+            if IAPShare.sharedHelper().iap.isPurchasedProductsIdentifier(Constants.InAppPurchases.RemoveAds) {
+                bannerVC.enabled(false)
+            }
+            else{
+                bannerVC.enabled(true)
             }
         }
     }
