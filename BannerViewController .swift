@@ -2,7 +2,7 @@
 //  BannerVC.swift
 //  Ysoftware
 //
-//  Created by Ярослав Ерохин on 29.06.15.
+//  Created by Yaroslav Erohin on 29.06.15.
 //  Copyright © 2015 Yaroslav Erohin. All rights reserved.
 //
 
@@ -18,6 +18,27 @@ class BannerViewController: UIViewController, ADBannerViewDelegate {
 
     private let _bannerView = ADBannerView(adType: .Banner)
     private var enabled = true
+
+    // MARK: - Methods
+
+    /// Set 'true' to enable banner rotation, 'false' to remove banner from view hierarchy
+    func enabled(value:Bool) {
+        enabled = value
+        if enabled {
+            if _bannerView.superview == nil {
+                view.addSubview(_bannerView)
+            }
+        }
+        else {
+            _bannerView.removeFromSuperview()
+        }
+        UIView.animateWithDuration(0.25) { () -> Void in
+            self.view.setNeedsLayout()
+            self.view.layoutIfNeeded()
+        }
+    }
+
+    // MARK: - UIViewController
 
     convenience init(contentController:UIViewController!) {
         self.init()
@@ -66,21 +87,7 @@ class BannerViewController: UIViewController, ADBannerViewDelegate {
         _bannerView.frame = bannerFrame
     }
 
-    func enabled(value:Bool) {
-        enabled = value
-        if enabled {
-            if _bannerView.superview == nil {
-                view.addSubview(_bannerView)
-            }
-        }
-        else {
-            _bannerView.removeFromSuperview()
-        }
-        UIView.animateWithDuration(0.25) { () -> Void in
-            self.view.setNeedsLayout()
-            self.view.layoutIfNeeded()
-        }
-    }
+    // MARK: - ADBannerViewDelegate
 
     func bannerViewDidLoadAd(banner: ADBannerView!) {
         NSNotificationCenter.defaultCenter().postNotificationName(BannerViewDidLoadAd, object: self)
@@ -106,5 +113,6 @@ class BannerViewController: UIViewController, ADBannerViewDelegate {
     func bannerViewActionDidFinish(banner: ADBannerView!) {
         NSNotificationCenter.defaultCenter().postNotificationName(BannerViewActionDidFinish, object: self)
     }
+    
 }
 
