@@ -26,8 +26,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             window?.rootViewController = bannerVC
         }
 
-        //Set banner rotation on or off
         if let bannerVC = window?.rootViewController as? BannerViewController {
+             //Set banner rotation on or off
             if IAPShare.sharedHelper().iap.isPurchasedProductsIdentifier(Constants.InAppPurchases.RemoveAds) {
                 bannerVC.enabled(false)
             }
