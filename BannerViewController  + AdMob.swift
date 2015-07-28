@@ -7,7 +7,7 @@ import Foundation
 import iAd
 import GoogleMobileAds
 
-class BannerViewController1: UIViewController, ADBannerViewDelegate, GADBannerViewDelegate {
+class BannerViewController: UIViewController, ADBannerViewDelegate, GADBannerViewDelegate {
 
     // MARK: - Set Up
 
