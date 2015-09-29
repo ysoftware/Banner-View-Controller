@@ -11,30 +11,44 @@ import iAd
 
 class BannerViewController: UIViewController, ADBannerViewDelegate {
 
-    let BannerViewActionWillBegin = "BannerViewActionWillBegin", BannerViewActionDidFinish = "BannerViewActionDidFinish",
+    static let BannerViewActionWillBegin = "BannerViewActionWillBegin", BannerViewActionDidFinish = "BannerViewActionDidFinish",
     BannerViewDidFailToReceiveAdWithError = "BannerViewDidFailToReceiveAdWithError", BannerViewDidLoadAd = "BannerViewDidLoadAd"
+
+    func updateView() {
+        view.setNeedsLayout()
+        view.layoutIfNeeded()
+        _contentViewController.view.setNeedsLayout()
+        _contentViewController.view.layoutIfNeeded()
+    }
 
     var _contentViewController:UIViewController!
 
-    private let _bannerView = ADBannerView(adType: .Banner)
+    private var _bannerView = ADBannerView(adType: .Banner)
     private var enabled = true
 
     // MARK: - Methods
 
     /// Set 'true' to enable banner rotation, 'false' to remove banner from view hierarchy
-    func enabled(value:Bool) {
+    func setEnabled(value:Bool, animated:Bool) {
         enabled = value
         if enabled {
+            _bannerView.delegate = self
             if _bannerView.superview == nil {
                 view.addSubview(_bannerView)
             }
         }
         else {
+            _bannerView.delegate = nil
             _bannerView.removeFromSuperview()
         }
-        UIView.animateWithDuration(0.25) { () -> Void in
-            self.view.setNeedsLayout()
-            self.view.layoutIfNeeded()
+
+        if animated {
+            UIView.animateWithDuration(0.25) { () -> Void in
+                self.updateView()
+            }
+        }
+        else {
+            updateView()
         }
     }
 
@@ -60,7 +74,7 @@ class BannerViewController: UIViewController, ADBannerViewDelegate {
         return _contentViewController.shouldAutorotate()
     }
 
-    override func supportedInterfaceOrientations() -> Int {
+    override func supportedInterfaceOrientations() -> UIInterfaceOrientationMask {
         return _contentViewController.supportedInterfaceOrientations()
     }
 
@@ -90,28 +104,29 @@ class BannerViewController: UIViewController, ADBannerViewDelegate {
     // MARK: - ADBannerViewDelegate
 
     func bannerViewDidLoadAd(banner: ADBannerView!) {
-        NSNotificationCenter.defaultCenter().postNotificationName(BannerViewDidLoadAd, object: self)
-        UIView.animateWithDuration(0.25) { () -> Void in
-            self.view.setNeedsLayout()
-            self.view.layoutIfNeeded()
+        (UIApplication.sharedApplication().delegate as! AppDelegate).setUpiAd()
+        UIView.animateWithDuration(0.25, animations: { () -> Void in
+            self.updateView()
+            }) { (_) -> Void in
+                NSNotificationCenter.defaultCenter().postNotificationName(BannerViewController.BannerViewDidLoadAd, object: self)
         }
     }
 
     func bannerView(banner: ADBannerView!, didFailToReceiveAdWithError error: NSError!) {
-        NSNotificationCenter.defaultCenter().postNotificationName(BannerViewDidFailToReceiveAdWithError, object: self, userInfo: ["error":error.localizedDescription])
-        UIView.animateWithDuration(0.25) { () -> Void in
-            self.view.setNeedsLayout()
-            self.view.layoutIfNeeded()
+        UIView.animateWithDuration(0.25, animations: { () -> Void in
+            self.updateView()
+            }) { (_) -> Void in
+                NSNotificationCenter.defaultCenter().postNotificationName(BannerViewController.BannerViewDidFailToReceiveAdWithError, object: self)
         }
     }
 
     func bannerViewActionShouldBegin(banner: ADBannerView!, willLeaveApplication willLeave: Bool) -> Bool {
-        NSNotificationCenter.defaultCenter().postNotificationName(BannerViewActionWillBegin, object: self)
+        NSNotificationCenter.defaultCenter().postNotificationName(BannerViewController.BannerViewActionWillBegin, object: self)
         return true
     }
 
     func bannerViewActionDidFinish(banner: ADBannerView!) {
-        NSNotificationCenter.defaultCenter().postNotificationName(BannerViewActionDidFinish, object: self)
+        NSNotificationCenter.defaultCenter().postNotificationName(BannerViewController.BannerViewActionDidFinish, object: self)
     }
     
 }
