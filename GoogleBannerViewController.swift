@@ -123,19 +123,21 @@ class GoogleBannerViewController: UIViewController, GADBannerViewDelegate {
 
     func adView(view: GADBannerView!, didFailToReceiveAdWithError error: GADRequestError!) {
         bannerLoaded = false
-        NSNotificationCenter.defaultCenter().postNotificationName(GoogleBannerViewController.BannerViewDidFailToReceiveAd, object: self)
-        UIView.animateWithDuration(0.25) {
+        UIView.animateWithDuration(0.25, animations: {
             self.view.setNeedsLayout()
             self.view.layoutIfNeeded()
+        }) { _ in
+            NSNotificationCenter.defaultCenter().postNotificationName(GoogleBannerViewController.BannerViewDidFailToReceiveAd, object: self)
         }
     }
 
     func adViewDidReceiveAd(view: GADBannerView!) {
         bannerLoaded = true
-        NSNotificationCenter.defaultCenter().postNotificationName(GoogleBannerViewController.BannerViewDidLoadAd, object: self)
-        UIView.animateWithDuration(0.25) {
+        UIView.animateWithDuration(0.25, animations: {
             self.view.setNeedsLayout()
             self.view.layoutIfNeeded()
+        }) { _ in
+            NSNotificationCenter.defaultCenter().postNotificationName(GoogleBannerViewController.BannerViewDidLoadAd, object: self)
         }
     }
 
