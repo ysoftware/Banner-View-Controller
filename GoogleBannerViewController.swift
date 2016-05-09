@@ -27,9 +27,6 @@ class GoogleBannerViewController: UIViewController, GADBannerViewDelegate {
     private var enabled = true
     private var bannerLoaded = false
 
-    //AdMob id
-    let adUnitID = "ca-app-pub-4118201815139139/6861202008"
-
     // MARK: - Methods
 
     /// Set 'true' to enable banner rotation, 'false' to remove banner from view hierarchy
@@ -59,17 +56,17 @@ class GoogleBannerViewController: UIViewController, GADBannerViewDelegate {
 
     // MARK: - UIViewController
 
-    convenience init(contentController:UIViewController!) {
+    convenience init(contentController:UIViewController!, adUnitId:String) {
         self.init()
         _contentViewController = contentController
         _bannerView.delegate = self
         _bannerView.autoresizingMask = .FlexibleWidth
+        _bannerView.adUnitID = adUnitId
     }
 
     override func loadView() {
         super.loadView()
 
-        _bannerView.adUnitID = adUnitID
         _bannerView.delegate = self
         _bannerView.autoresizingMask = .FlexibleWidth
         _bannerView.rootViewController = self
@@ -140,6 +137,14 @@ class GoogleBannerViewController: UIViewController, GADBannerViewDelegate {
             self.view.setNeedsLayout()
             self.view.layoutIfNeeded()
         }
+    }
+
+    func adViewDidDismissScreen(bannerView: GADBannerView!) {
+        NSNotificationCenter.defaultCenter().postNotificationName(GoogleBannerViewController.BannerViewActionDidFinish, object: self)
+    }
+
+    func adViewWillPresentScreen(bannerView: GADBannerView!) {
+        NSNotificationCenter.defaultCenter().postNotificationName(GoogleBannerViewController.BannerViewActionWillBegin, object: self)
     }
     
     
