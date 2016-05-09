@@ -6,14 +6,20 @@ Works great with both iPad and iPhone.
 
 ####Installation
 
-Add BannerViewController.swift to your project. Don't forget to set the target.
+Add files to your project. Don't forget to set the target.
 
 ####How to use
 
-BannerViewController wraps around your rootViewController, shows the banner and resizes rootViewController with animation. Check AppDelegate.swift for live usage example.
+This class wraps around your rootViewController, shows the banner and resizes rootViewController with animation. Check AppDelegate.swift for live usage example.
 
 ```swift
 let bannerVC = BannerViewController(contentController: window.rootViewController)
+window.rootViewController = bannerVC
+```
+
+For adMob:
+```swift
+let bannerVC = GoogleBannerViewController(contentController: window?.rootViewController, adUnitId: "your_ad_unit_id")
 window.rootViewController = bannerVC
 ```
 
