@@ -1,18 +1,18 @@
 //
-//  BannerVC.swift
-//  Ysoftware
+//  GoogleBannerViewController.swift
+//  Whoniverse
 //
-//  Created by Yaroslav Erohin on 29.06.15.
-//  Copyright © 2015 Yaroslav Erohin. All rights reserved.
+//  Created by Ярослав Ерохин on 05.05.16.
+//  Copyright © 2016 Yaroslav Erohin. All rights reserved.
 //
 
 import UIKit
-import iAd
+import GoogleMobileAds
 
-class BannerViewController: UIViewController, ADBannerViewDelegate {
+class GoogleBannerViewController: UIViewController, GADBannerViewDelegate {
 
     static let BannerViewActionWillBegin = "BannerViewActionWillBegin", BannerViewActionDidFinish = "BannerViewActionDidFinish",
-    BannerViewDidFailToReceiveAdWithError = "BannerViewDidFailToReceiveAdWithError", BannerViewDidLoadAd = "BannerViewDidLoadAd"
+    BannerViewDidFailToReceiveAd = "BannerViewDidFailToReceiveAdWithError", BannerViewDidLoadAd = "BannerViewDidLoadAd"
 
     func updateView() {
         view.setNeedsLayout()
@@ -23,14 +23,19 @@ class BannerViewController: UIViewController, ADBannerViewDelegate {
 
     var _contentViewController:UIViewController!
 
-    private var _bannerView = ADBannerView(adType: .Banner)
+    private var _bannerView = GADBannerView(adSize: UIApplication.sharedApplication().statusBarOrientation.isLandscape ? kGADAdSizeSmartBannerLandscape : kGADAdSizeSmartBannerPortrait)
     private var enabled = true
+    private var bannerLoaded = false
+
+    //AdMob id
+    let adUnitID = "ca-app-pub-4118201815139139/6861202008"
 
     // MARK: - Methods
 
     /// Set 'true' to enable banner rotation, 'false' to remove banner from view hierarchy
     func setEnabled(value:Bool, animated:Bool) {
         enabled = value
+
         if enabled {
             _bannerView.delegate = self
             if _bannerView.superview == nil {
@@ -62,6 +67,16 @@ class BannerViewController: UIViewController, ADBannerViewDelegate {
     }
 
     override func loadView() {
+        super.loadView()
+
+        _bannerView.adUnitID = adUnitID
+        _bannerView.delegate = self
+        _bannerView.autoresizingMask = .FlexibleWidth
+        _bannerView.rootViewController = self
+        let request = GADRequest()
+        request.testDevices = [kGADSimulatorID]
+        _bannerView.loadRequest(request)
+
         let contentView = UIView(frame: UIScreen.mainScreen().bounds)
         contentView.addSubview(_bannerView)
         addChildViewController(_contentViewController)
@@ -88,7 +103,7 @@ class BannerViewController: UIViewController, ADBannerViewDelegate {
             _bannerView.autoresizingMask = .FlexibleWidth
             bannerFrame.size = _bannerView.sizeThatFits(contentFrame.size)
 
-            if _bannerView.bannerLoaded {
+            if bannerLoaded {
                 contentFrame.size.height -= bannerFrame.size.height
                 bannerFrame.origin.y = contentFrame.size.height
             }
@@ -101,33 +116,32 @@ class BannerViewController: UIViewController, ADBannerViewDelegate {
         _bannerView.frame = bannerFrame
     }
 
-    // MARK: - ADBannerViewDelegate
+    override func viewWillTransitionToSize(size: CGSize, withTransitionCoordinator coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransitionToSize(size, withTransitionCoordinator: coordinator)
 
-    func bannerViewDidLoadAd(banner: ADBannerView!) {
-        (UIApplication.sharedApplication().delegate as! AppDelegate).setUpiAd()
-        UIView.animateWithDuration(0.25, animations: {
-            self.updateView()
-            }) { _ in
-                NSNotificationCenter.defaultCenter().postNotificationName(BannerViewController.BannerViewDidLoadAd, object: self)
+        _bannerView.adSize = UIApplication.sharedApplication().statusBarOrientation.isLandscape ? kGADAdSizeSmartBannerLandscape : kGADAdSizeSmartBannerPortrait
+    }
+
+    // MARK: - GADBannerViewDelegate
+
+    func adView(view: GADBannerView!, didFailToReceiveAdWithError error: GADRequestError!) {
+        bannerLoaded = false
+        NSNotificationCenter.defaultCenter().postNotificationName(GoogleBannerViewController.BannerViewDidFailToReceiveAd, object: self)
+        UIView.animateWithDuration(0.25) {
+            self.view.setNeedsLayout()
+            self.view.layoutIfNeeded()
         }
     }
 
-    func bannerView(banner: ADBannerView!, didFailToReceiveAdWithError error: NSError!) {
-        UIView.animateWithDuration(0.25, animations: { () -> Void in
-            self.updateView()
-            }) { _ in
-                NSNotificationCenter.defaultCenter().postNotificationName(BannerViewController.BannerViewDidFailToReceiveAdWithError, object: self)
+    func adViewDidReceiveAd(view: GADBannerView!) {
+        bannerLoaded = true
+        NSNotificationCenter.defaultCenter().postNotificationName(GoogleBannerViewController.BannerViewDidLoadAd, object: self)
+        UIView.animateWithDuration(0.25) {
+            self.view.setNeedsLayout()
+            self.view.layoutIfNeeded()
         }
     }
-
-    func bannerViewActionShouldBegin(banner: ADBannerView!, willLeaveApplication willLeave: Bool) -> Bool {
-        NSNotificationCenter.defaultCenter().postNotificationName(BannerViewController.BannerViewActionWillBegin, object: self)
-        return true
-    }
-
-    func bannerViewActionDidFinish(banner: ADBannerView!) {
-        NSNotificationCenter.defaultCenter().postNotificationName(BannerViewController.BannerViewActionDidFinish, object: self)
-    }
+    
     
 }
 
