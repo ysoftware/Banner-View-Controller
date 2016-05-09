@@ -130,4 +130,3 @@ class BannerViewController: UIViewController, ADBannerViewDelegate {
     }
     
 }
-
