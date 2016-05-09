@@ -12,12 +12,13 @@ Add files to your project. Don't forget to set the target.
 
 This class wraps around your rootViewController, shows the banner and resizes rootViewController with animation. Check AppDelegate.swift for live usage example.
 
+######iAd
 ```swift
 let bannerVC = BannerViewController(contentController: window.rootViewController)
 window.rootViewController = bannerVC
 ```
 
-For adMob:
+######AdMob:
 ```swift
 let bannerVC = GoogleBannerViewController(contentController: window?.rootViewController, adUnitId: "your_ad_unit_id")
 window.rootViewController = bannerVC
