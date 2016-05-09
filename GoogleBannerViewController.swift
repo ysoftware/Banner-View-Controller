@@ -1,8 +1,8 @@
 //
 //  GoogleBannerViewController.swift
-//  Whoniverse
+//  Ysoftware
 //
-//  Created by Ярослав Ерохин on 05.05.16.
+//  Created by Yaroslav Erohin on 05.05.16.
 //  Copyright © 2016 Yaroslav Erohin. All rights reserved.
 //
 
