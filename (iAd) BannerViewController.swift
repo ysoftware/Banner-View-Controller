@@ -1,18 +1,18 @@
 //
-//  GoogleBannerViewController.swift
+//  BannerVC.swift
 //  Ysoftware
 //
-//  Created by Yaroslav Erohin on 05.05.16.
-//  Copyright © 2016 Yaroslav Erohin. All rights reserved.
+//  Created by Yaroslav Erohin on 29.06.15.
+//  Copyright © 2015 Yaroslav Erohin. All rights reserved.
 //
 
 import UIKit
-import GoogleMobileAds
+import iAd
 
-class GoogleBannerViewController: UIViewController, GADBannerViewDelegate {
+class BannerViewController: UIViewController, ADBannerViewDelegate {
 
     static let BannerViewActionWillBegin = "BannerViewActionWillBegin", BannerViewActionDidFinish = "BannerViewActionDidFinish",
-    BannerViewDidFailToReceiveAd = "BannerViewDidFailToReceiveAdWithError", BannerViewDidLoadAd = "BannerViewDidLoadAd"
+    BannerViewDidFailToReceiveAdWithError = "BannerViewDidFailToReceiveAdWithError", BannerViewDidLoadAd = "BannerViewDidLoadAd"
 
     func updateView() {
         view.setNeedsLayout()
@@ -23,16 +23,14 @@ class GoogleBannerViewController: UIViewController, GADBannerViewDelegate {
 
     var _contentViewController:UIViewController!
 
-    private var _bannerView = GADBannerView(adSize: UIApplication.sharedApplication().statusBarOrientation.isLandscape ? kGADAdSizeSmartBannerLandscape : kGADAdSizeSmartBannerPortrait)
+    private var _bannerView = ADBannerView(adType: .Banner)
     private var enabled = true
-    private var bannerLoaded = false
 
     // MARK: - Methods
 
     /// Set 'true' to enable banner rotation, 'false' to remove banner from view hierarchy
     func setEnabled(value:Bool, animated:Bool) {
         enabled = value
-
         if enabled {
             _bannerView.delegate = self
             if _bannerView.superview == nil {
@@ -56,24 +54,14 @@ class GoogleBannerViewController: UIViewController, GADBannerViewDelegate {
 
     // MARK: - UIViewController
 
-    convenience init(contentController:UIViewController!, adUnitId:String) {
+    convenience init(contentController:UIViewController!) {
         self.init()
         _contentViewController = contentController
         _bannerView.delegate = self
         _bannerView.autoresizingMask = .FlexibleWidth
-        _bannerView.adUnitID = adUnitId
     }
 
     override func loadView() {
-        super.loadView()
-
-        _bannerView.delegate = self
-        _bannerView.autoresizingMask = .FlexibleWidth
-        _bannerView.rootViewController = self
-        let request = GADRequest()
-        request.testDevices = [kGADSimulatorID]
-        _bannerView.loadRequest(request)
-
         let contentView = UIView(frame: UIScreen.mainScreen().bounds)
         contentView.addSubview(_bannerView)
         addChildViewController(_contentViewController)
@@ -100,7 +88,7 @@ class GoogleBannerViewController: UIViewController, GADBannerViewDelegate {
             _bannerView.autoresizingMask = .FlexibleWidth
             bannerFrame.size = _bannerView.sizeThatFits(contentFrame.size)
 
-            if bannerLoaded {
+            if _bannerView.bannerLoaded {
                 contentFrame.size.height -= bannerFrame.size.height
                 bannerFrame.origin.y = contentFrame.size.height
             }
@@ -113,42 +101,32 @@ class GoogleBannerViewController: UIViewController, GADBannerViewDelegate {
         _bannerView.frame = bannerFrame
     }
 
-    override func viewWillTransitionToSize(size: CGSize, withTransitionCoordinator coordinator: UIViewControllerTransitionCoordinator) {
-        super.viewWillTransitionToSize(size, withTransitionCoordinator: coordinator)
+    // MARK: - ADBannerViewDelegate
 
-        _bannerView.adSize = UIApplication.sharedApplication().statusBarOrientation.isLandscape ? kGADAdSizeSmartBannerLandscape : kGADAdSizeSmartBannerPortrait
-    }
-
-    // MARK: - GADBannerViewDelegate
-
-    func adView(view: GADBannerView!, didFailToReceiveAdWithError error: GADRequestError!) {
-        bannerLoaded = false
+    func bannerViewDidLoadAd(banner: ADBannerView!) {
+        (UIApplication.sharedApplication().delegate as! AppDelegate).setUpiAd()
         UIView.animateWithDuration(0.25, animations: {
-            self.view.setNeedsLayout()
-            self.view.layoutIfNeeded()
-        }) { _ in
-            NSNotificationCenter.defaultCenter().postNotificationName(GoogleBannerViewController.BannerViewDidFailToReceiveAd, object: self)
+            self.updateView()
+            }) { _ in
+                NSNotificationCenter.defaultCenter().postNotificationName(BannerViewController.BannerViewDidLoadAd, object: self)
         }
     }
 
-    func adViewDidReceiveAd(view: GADBannerView!) {
-        bannerLoaded = true
-        UIView.animateWithDuration(0.25, animations: {
-            self.view.setNeedsLayout()
-            self.view.layoutIfNeeded()
-        }) { _ in
-            NSNotificationCenter.defaultCenter().postNotificationName(GoogleBannerViewController.BannerViewDidLoadAd, object: self)
+    func bannerView(banner: ADBannerView!, didFailToReceiveAdWithError error: NSError!) {
+        UIView.animateWithDuration(0.25, animations: { () -> Void in
+            self.updateView()
+            }) { _ in
+                NSNotificationCenter.defaultCenter().postNotificationName(BannerViewController.BannerViewDidFailToReceiveAdWithError, object: self)
         }
     }
 
-    func adViewDidDismissScreen(bannerView: GADBannerView!) {
-        NSNotificationCenter.defaultCenter().postNotificationName(GoogleBannerViewController.BannerViewActionDidFinish, object: self)
+    func bannerViewActionShouldBegin(banner: ADBannerView!, willLeaveApplication willLeave: Bool) -> Bool {
+        NSNotificationCenter.defaultCenter().postNotificationName(BannerViewController.BannerViewActionWillBegin, object: self)
+        return true
     }
 
-    func adViewWillPresentScreen(bannerView: GADBannerView!) {
-        NSNotificationCenter.defaultCenter().postNotificationName(GoogleBannerViewController.BannerViewActionWillBegin, object: self)
+    func bannerViewActionDidFinish(banner: ADBannerView!) {
+        NSNotificationCenter.defaultCenter().postNotificationName(BannerViewController.BannerViewActionDidFinish, object: self)
     }
-    
     
 }
-
