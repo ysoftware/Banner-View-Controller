@@ -1,186 +1,132 @@
 //
-//  BannerViewController.swift
+//  BannerVC.swift
 //  Ysoftware
 //
-//  Created by Yaroslav Erohin on 05.05.16.
-//  Copyright © 2016 Yaroslav Erohin. All rights reserved.
+//  Created by Yaroslav Erohin on 29.06.15.
+//  Copyright © 2015 Yaroslav Erohin. All rights reserved.
 //
 
 import UIKit
-import GoogleMobileAds
+import iAd
 
-final class BannerViewController: UIViewController, GADBannerViewDelegate {
+class BannerViewController: UIViewController, ADBannerViewDelegate {
 
     static let BannerViewActionWillBegin = "BannerViewActionWillBegin", BannerViewActionDidFinish = "BannerViewActionDidFinish",
-    BannerViewDidFailToReceiveAd = "BannerViewDidFailToReceiveAdWithError", BannerViewDidLoadAd = "BannerViewDidLoadAd"
+    BannerViewDidFailToReceiveAdWithError = "BannerViewDidFailToReceiveAdWithError", BannerViewDidLoadAd = "BannerViewDidLoadAd"
 
-    /// BannerViewController wraps around this view controller to show ads.
-    var _contentViewController:UIViewController!
-
-    /// When ad cannot be loaded, these views will appear. If this array is empty, banner will hide with animation.
-    var fallbackViews:[UIView] = []
-
-    fileprivate var enabled = true
-    fileprivate var bannerLoaded = false
-    fileprivate var _bannerView = GADBannerView(adSize: kGADAdSizeSmartBannerPortrait)
-
-    fileprivate var _fallbackView:UIView?
-
-    fileprivate var isLandscape:Bool {
-        return UIApplication.shared.statusBarOrientation.isLandscape
-    }
-
-    // MARK: - Methods
-
-    /// Set 'true' to enable banner rotation, 'false' to remove banner from view hierarchy
-    func setEnabled(_ value:Bool, animated:Bool) {
-        enabled = value
-
-        if enabled {
-            if _bannerView.superview == nil {
-                view.addSubview(_bannerView)
-            }
-            let request = GADRequest()
-            request.testDevices = [kGADSimulatorID, "480fffafb3ce50a6066f2814e15d53b6"]
-            _bannerView.load(request)
-            _bannerView.isAutoloadEnabled = true
-        }
-        else {
-            _bannerView.removeFromSuperview()
-            _bannerView.isAutoloadEnabled = false
-        }
-
-        UIView.animate(withDuration: animated ? 0.25 : 0, animations: {
-            self.updateView()
-        }) 
-    }
-
-    fileprivate func updateView() {
+    func updateView() {
         view.setNeedsLayout()
         view.layoutIfNeeded()
         _contentViewController.view.setNeedsLayout()
         _contentViewController.view.layoutIfNeeded()
     }
 
-    // MARK: - UIViewController overrides
+    var _contentViewController:UIViewController!
 
-    convenience init(contentController:UIViewController!, adUnitId:String) {
+    private var _bannerView = ADBannerView(adType: .Banner)
+    private var enabled = true
+
+    // MARK: - Methods
+
+    /// Set 'true' to enable banner rotation, 'false' to remove banner from view hierarchy
+    func setEnabled(value:Bool, animated:Bool) {
+        enabled = value
+        if enabled {
+            _bannerView.delegate = self
+            if _bannerView.superview == nil {
+                view.addSubview(_bannerView)
+            }
+        }
+        else {
+            _bannerView.delegate = nil
+            _bannerView.removeFromSuperview()
+        }
+
+        if animated {
+            UIView.animateWithDuration(0.25) {
+                self.updateView()
+            }
+        }
+        else {
+            updateView()
+        }
+    }
+
+    // MARK: - UIViewController
+
+    convenience init(contentController:UIViewController!) {
         self.init()
         _contentViewController = contentController
         _bannerView.delegate = self
-        _bannerView.isAutoloadEnabled = false
-        _bannerView.autoresizingMask = .flexibleWidth
-        _bannerView.adUnitID = adUnitId
-        setEnabled(enabled, animated: false)
+        _bannerView.autoresizingMask = .FlexibleWidth
     }
 
     override func loadView() {
-        super.loadView()
-
-        _bannerView.autoresizingMask = .flexibleWidth
-        _bannerView.rootViewController = self
-
-        let contentView = UIView(frame: UIScreen.main.bounds)
+        let contentView = UIView(frame: UIScreen.mainScreen().bounds)
         contentView.addSubview(_bannerView)
         addChildViewController(_contentViewController)
-        contentView.addSubview(_contentViewController.view)
-        _contentViewController.didMove(toParentViewController: self)
+        contentView .addSubview(_contentViewController.view)
+        _contentViewController.didMoveToParentViewController(self)
         view = contentView
+    }
+
+    override func shouldAutorotate() -> Bool {
+        return _contentViewController.shouldAutorotate()
+    }
+
+    override func supportedInterfaceOrientations() -> UIInterfaceOrientationMask {
+        return _contentViewController.supportedInterfaceOrientations()
     }
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
 
         var contentFrame = view.bounds
-        var bannerFrame = CGRect.zero
-        var fallbackFrame = CGRect(x: 0, y: 0, width: view.bounds.width, height: 0)
+        var bannerFrame = CGRectZero
 
         if enabled {
-            if bannerLoaded {
-                bannerFrame.size = _bannerView.sizeThatFits(view.bounds.size)
+            _bannerView.autoresizingMask = .FlexibleWidth
+            bannerFrame.size = _bannerView.sizeThatFits(contentFrame.size)
+
+            if _bannerView.bannerLoaded {
                 contentFrame.size.height -= bannerFrame.size.height
                 bannerFrame.origin.y = contentFrame.size.height
-                _bannerView.frame = bannerFrame
-
-                for s in view.subviews {
-                    if s is FallbackBanner {
-                        s.removeFromSuperview()
-                    }
-                }
             }
-            else if fallbackViews.count > 0 {
-                _fallbackView = fallbackViews.randomItem()
-                if let fbv = _fallbackView {
-                    view.addSubview(fbv)
-                }
-                _fallbackView?.autoresizingMask = .flexibleWidth
-
-                fallbackFrame.size = CGSize(width: view.bounds.width, height: min(70, view.bounds.height / 10))
-                contentFrame.size.height -= fallbackFrame.size.height
-                fallbackFrame.origin.y = contentFrame.size.height
-                _fallbackView?.frame = fallbackFrame
+            else {
+                bannerFrame.origin.y = contentFrame.size.height
             }
         }
 
         _contentViewController.view.frame = contentFrame
+        _bannerView.frame = bannerFrame
     }
 
-    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
-        super.viewWillTransition(to: size, with: coordinator)
+    // MARK: - ADBannerViewDelegate
 
-        updateView()
-    }
-
-    override var shouldAutorotate : Bool {
-        return _contentViewController.shouldAutorotate
-    }
-
-    override var supportedInterfaceOrientations : UIInterfaceOrientationMask {
-        return _contentViewController.supportedInterfaceOrientations
-    }
-
-    override var childViewControllerForStatusBarStyle : UIViewController? {
-        return _contentViewController
-    }
-
-    override var childViewControllerForStatusBarHidden : UIViewController? {
-        return _contentViewController
-    }
-
-    // MARK: - GADBannerViewDelegate
-
-    func adView(_ view: GADBannerView!, didFailToReceiveAdWithError error: GADRequestError!) {
-        print("AdMob banner: ad failed (\(error.localizedDescription))")
-        bannerLoaded = false
-
-        UIView.animate(withDuration: 0.25, animations: {
+    func bannerViewDidLoadAd(banner: ADBannerView!) {
+        (UIApplication.sharedApplication().delegate as! AppDelegate).setUpiAd()
+        UIView.animateWithDuration(0.25, animations: {
             self.updateView()
-        }) { _ in
-            NotificationCenter.default.post(Notification(name: Notification.Name(rawValue: BannerViewController.BannerViewDidFailToReceiveAd), object: self))
+            }) { _ in
+                NSNotificationCenter.defaultCenter().postNotificationName(BannerViewController.BannerViewDidLoadAd, object: self)
         }
     }
 
-    func adViewDidReceiveAd(_ view: GADBannerView!) {
-        print("AdMob banner: loaded ad")
-        bannerLoaded = true
-
-        UIView.animate(withDuration: 0.25, animations: {
+    func bannerView(banner: ADBannerView!, didFailToReceiveAdWithError error: NSError!) {
+        UIView.animateWithDuration(0.25, animations: { () -> Void in
             self.updateView()
-        }) { _ in
-            NotificationCenter.default.post(Notification(name: Notification.Name(rawValue: BannerViewController.BannerViewDidLoadAd), object: self))
+            }) { _ in
+                NSNotificationCenter.defaultCenter().postNotificationName(BannerViewController.BannerViewDidFailToReceiveAdWithError, object: self)
         }
     }
 
-    func adViewDidDismissScreen(_ bannerView: GADBannerView!) {
-        print("AdMob banner: did dismiss screen")
-        NotificationCenter.default.post(Notification(name: Notification.Name(rawValue: BannerViewController.BannerViewActionDidFinish), object: self))
+    func bannerViewActionShouldBegin(banner: ADBannerView!, willLeaveApplication willLeave: Bool) -> Bool {
+        NSNotificationCenter.defaultCenter().postNotificationName(BannerViewController.BannerViewActionWillBegin, object: self)
+        return true
     }
 
-    func adViewWillPresentScreen(_ bannerView: GADBannerView!) {
-        print("AdMob banner: will present screen")
-        NotificationCenter.default.post(Notification(name: Notification.Name(rawValue: BannerViewController.BannerViewActionWillBegin), object: self))
+    func bannerViewActionDidFinish(banner: ADBannerView!) {
+        NSNotificationCenter.defaultCenter().postNotificationName(BannerViewController.BannerViewActionDidFinish, object: self)
     }
-    
     
 }
-
