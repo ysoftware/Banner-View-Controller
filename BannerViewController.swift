@@ -20,6 +20,9 @@ final class BannerViewController: UIViewController, GADBannerViewDelegate {
     /// When ad cannot be loaded, these views will appear. If this array is empty, banner will hide with animation.
     var fallbackViews:[UIView] = []
 
+    /// Url of content that's being show to user at the moment.
+    var contentUrl:String?
+
     fileprivate var enabled = true
     fileprivate var bannerLoaded = false
     fileprivate var _bannerView = GADBannerView(adSize: kGADAdSizeSmartBannerPortrait)
@@ -41,6 +44,7 @@ final class BannerViewController: UIViewController, GADBannerViewDelegate {
                 view.addSubview(_bannerView)
             }
             let request = GADRequest()
+            request.contentURL = contentUrl
             request.testDevices = [kGADSimulatorID, "480fffafb3ce50a6066f2814e15d53b6"]
             _bannerView.load(request)
             _bannerView.isAutoloadEnabled = true
